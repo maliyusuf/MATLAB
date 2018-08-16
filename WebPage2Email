@@ -1,0 +1,52 @@
+function WebPage2Email 
+% function WebPage2Email 
+%  Copyrighteous by M. Ali Yousuf, mali@jhu.edu 
+%  Version 1, 10/18/2016
+%  The purpose of this function is to collect email addresses from various
+%  webpages. The webpages should be stored in an Excecll file
+%  'webpages.xlsx', one address each row, in column 1
+%  The output of the program are two files, one a text file and other an
+%  Excell file. Both contain a list of emails gathered from these webpages
+%  Some further processing is required in Excell, like eliminating
+%  duplicates and removing lines starting with @
+
+tic;
+formatSpec = '%s \r\n';
+
+[~,L,~] = xlsread('webpages.xlsx');
+[m,~]=size(L);
+
+fileID1 = fopen('emails.txt','w');
+for I=1:m
+    url = L{I,1};             %writing whole address here also works
+    wholepage = webread(url);
+    email1 = '\w*@[a-z]+\.(edu|net|com)';
+    email2 = '\w*@[a-z]+\.[a-z]+\.(edu|net|com)';
+
+    matchStr1 = regexpi(wholepage,email1,'match');
+    [row1,~]=size(matchStr1);
+    
+    matchStr2 = regexpi(wholepage,email2,'match');
+    [row2,~]=size(matchStr2);
+    
+    if row1 == 0 
+     else fprintf(fileID1,formatSpec,L{I,1},matchStr1{row1,:});
+    end 
+    
+    if row2 ==0
+     else fprintf(fileID1,formatSpec,L{I,1},matchStr2{row2,:});
+    end
+    
+end
+fclose(fileID1); 
+    
+fileID2 = fopen('emails.txt','r');
+C = textscan(fileID2,formatSpec);
+fclose(fileID2);
+xlswrite('emails.xlsx',C{:});
+home
+disp('I am done ...')
+toc
+
+% To write this code, I took help from a tutorial at 
+% https://www.mathworks.com/help/matlab/matlab_prog/regular-expressions.html?requestedDomain=www.mathworks.com 
